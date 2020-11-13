@@ -27,6 +27,7 @@ func main() {
 		fmt.Println("error creating Discord session,", err)
 		return
 	}
+	dg.AddHandler(ready)
 
 	dg.AddHandler(messageCreate)
 
@@ -49,14 +50,10 @@ func main() {
 		return
 	}
 
-	dg.AddHandler(ready)
 }
 
-func ready(s *discordgo.Session){
-	 err := s.UpdateStatus(0, "!talk")
-	 if err != nil {
-		 fmt.Println("error with status", err)
-	 }
+func ready(s *discordgo.Session, event *discordgo.Ready){
+	 s.UpdateStatus(0, "!talk")
 }
 
 
