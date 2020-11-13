@@ -6,6 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 )
@@ -81,29 +82,54 @@ func sendCommands(s * discordgo.Session, m *discordgo.MessageCreate) {
 	}
 }
 
+var isMenuNumberTrue bool
+var selectedOption int
 
+func getEnteredOption(option string,s *discordgo.Session, m *discordgo.MessageCreate ) {
 
-func getEnteredOption(option string,s *discordgo.Session, m *discordgo.MessageCreate ){
 	index := strings.Index(option,"")
-	if index == 0 {
-		opt := option[index + 6:]
-		if opt == "1" || opt == "2" || opt == "3"{
+	options := [3]string{"1","2","3"}
+	opt := option[index + 6:]
+	for _, opts := range options {
+		if opt == opts{
 			msg  := "You have selected option:" + opt
+			optNum, _ := strconv.Atoi(opt)
+			selectedOption = optNum
 			_,err := s.ChannelMessageSend(m.ChannelID,msg)
 			if err != nil{
 				fmt.Println("error occurred ::",err)
 				return
 			}
-		} else {
-			_,err := s.ChannelMessageSend(m.ChannelID,"Please enter correct number")
-			if err != nil{
-				fmt.Println("error occurred ::",err)
-				return
-			}
+			isMenuNumberTrue = true
+			return
 		}
-	} else {
+	}
+	isMenuNumberTrue = false
+	return
+}
+
+func invokeMenuFuncs(opt int) {
+	switch opt {
+	case 1:
+		iconConverter()
+	case 2:
+		showTime()
+	case 3:
+		openCalculator()
+	default:
+		fmt.Println("Error occurred while invoking menu func")
 		return
 	}
+}
+
+func iconConverter() {
+	fmt.Println("icon converter")
+}
+func showTime() {
+	fmt.Println("show time")
+}
+func openCalculator() {
+	fmt.Println("open calculator")
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -120,7 +146,17 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.HasPrefix(m.Content, "!talk") && len(m.Content) != 5{
 		if len(m.Content) == 7{
 			getEnteredOption(m.Content,s,m)
+			if  isMenuNumberTrue == false {
+				_, err := s.ChannelMessageSend(m.ChannelID,"Please enter correct number")
+				if err != nil{
+					fmt.Println("error occurred ::",err)
+					return
+				}
+			} else {
+				invokeMenuFuncs(selectedOption)
+			}
 		}
+
 		if len(m.Content) >= 8 {
 			_, err := s.ChannelMessageSend(m.ChannelID,"different command with prefix")
 			if err != nil{
