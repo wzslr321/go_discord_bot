@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 )
 
 var (
@@ -135,7 +136,12 @@ func embedInstruction(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 }
 func showTime(s *discordgo.Session, m *discordgo.MessageCreate) {
-	fmt.Println("show time")
+	showTimeMsg := time.Now().Format("2006-01-02 15:04:05")
+	_, err := s.ChannelMessageSend(m.ChannelID,"Actual time is : " + showTimeMsg)
+	if err != nil{
+		fmt.Println("error occurred ::",err)
+		return
+	}
 }
 func openCalculator(s *discordgo.Session, m *discordgo.MessageCreate) {
 	fmt.Println("open calculator")
