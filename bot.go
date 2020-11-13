@@ -10,7 +10,6 @@ import (
 	"syscall"
 )
 
-// Variables used for command line parameters
 var (
 	Token string
 )

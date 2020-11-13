@@ -10,5 +10,9 @@
 > Afterwards, type `go build` to build a bot
 
 > If built properly, you have to run `./bot -t <TOKEN> ` 
-> Example : `./ bot -t /bot -t NzU5MDEwNXc0ODgwMjEwOTQ4.X23R3g._DE86FVVc9kG7F_XXet7Q00oOQw`
 
+#
+
+> Example : `./ bot -t NzU5MDEwNXc0ODgwMjEwOTQ4.X23R3g._DE86FVVc9kG7F_XXet7Q00oOQw`
+
+> I have started creating this bot after just few hours of learning GoByExample, so there  is still a lot to improve for sure.
