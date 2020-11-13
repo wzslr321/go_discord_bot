@@ -58,11 +58,10 @@ func ready(s *discordgo.Session, event *discordgo.Ready){
 }
 
 
-func newMessageEmbed(title string ,description string,color int, ) *discordgo.MessageEmbed {
+func newMessageEmbed(title string ,description string ) *discordgo.MessageEmbed {
 	msg := discordgo.MessageEmbed{
 		Title:title,
 		Description: description,
-		Color: color,
 	}
 	return &msg
 }
@@ -70,8 +69,7 @@ func newMessageEmbed(title string ,description string,color int, ) *discordgo.Me
 
 var commandListsEmbed = newMessageEmbed(
 	"Here is list of my commands!",
-	"1 : Unicode converter \n 2 : Check time \n 3:  Open calculator \n Type !talk <option> to choose one",
-	0000,
+	"1 : Embed message creator \n 2 : Check time \n 3:  Open calculator \n Type !talk <option> to choose one",
 )
 
 func sendCommands(s * discordgo.Session, m *discordgo.MessageCreate) {
@@ -108,28 +106,54 @@ func getEnteredOption(option string,s *discordgo.Session, m *discordgo.MessageCr
 	return
 }
 
-func invokeMenuFuncs(opt int) {
+func invokeMenuFuncs(opt int, s *discordgo.Session, m *discordgo.MessageCreate) {
 	switch opt {
 	case 1:
-		iconConverter()
+		embedInstruction(s,m)
 	case 2:
-		showTime()
+		showTime(s,m)
 	case 3:
-		openCalculator()
+		openCalculator(s,m)
 	default:
 		fmt.Println("Error occurred while invoking menu func")
 		return
 	}
 }
 
-func iconConverter() {
-	fmt.Println("icon converter")
+func embedInstruction(s *discordgo.Session, m *discordgo.MessageCreate) {
+
+	howToUseEmbed := newMessageEmbed(
+		"How to create message embed",
+		"Enter message starting with @ which contains title and description of message separated by '|' \n \n" +
+			"Example: !talk @ cool title | cool description ",
+	)
+
+	_, err := s.ChannelMessageSendEmbed(m.ChannelID,howToUseEmbed)
+	if err != nil{
+		fmt.Println("error occurred ::",err)
+		return
+	}
 }
-func showTime() {
+func showTime(s *discordgo.Session, m *discordgo.MessageCreate) {
 	fmt.Println("show time")
 }
-func openCalculator() {
+func openCalculator(s *discordgo.Session, m *discordgo.MessageCreate) {
 	fmt.Println("open calculator")
+}
+
+func createEmbed(s *discordgo.Session, m *discordgo.MessageCreate, title string, description string) {
+	if len(title) >= 1  && len(description) >= 1 {
+		createdMsgEmbed := newMessageEmbed(
+			title,
+			description,
+		)
+
+		_, err := s.ChannelMessageSendEmbed(m.ChannelID,createdMsgEmbed)
+		if err != nil{
+			fmt.Println("error occurred ::",err)
+			return
+		}
+	}
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -153,11 +177,25 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 					return
 				}
 			} else {
-				invokeMenuFuncs(selectedOption)
+				invokeMenuFuncs(selectedOption,s,m)
 			}
 		}
 
 		if len(m.Content) >= 8 {
+			msg := m.Content
+			if strings.HasPrefix(m.Content,"!talk @"){
+				indexDesc := strings.Index(msg,"|")
+				indexTitle := strings.Index(msg,"@")
+				if indexDesc > -1 && indexTitle > -1{
+					title := msg[indexTitle+1:indexDesc]
+					description := msg[indexDesc+1:]
+					createEmbed(s,m,title,description)
+				} else {
+					fmt.Println("error with msg embed")
+					return
+				}
+			}
+
 			_, err := s.ChannelMessageSend(m.ChannelID,"different command with prefix")
 			if err != nil{
 				fmt.Println("error occurred ::",err)
