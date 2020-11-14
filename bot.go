@@ -261,11 +261,10 @@ func divideValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal floa
 	calculate function checks what sign have user entered
 	It loops for every calculation option and checks
 	if it is equal to calculation sign that user have entered
-	Saves user sign properly only if there is no whitespace between sign
-	because of strings.Index being precised to one character
+	Saves user sign properly by using strings.ReplaceALl
+	which deletes whitespace between sign and values
 	It also separates values using this index, coverts them
 	into float number and pass as argument to correct function
-
  */
 func calculate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	calcOptions := []string{"+","-","*",":"}
@@ -276,9 +275,11 @@ func calculate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		firstValIndex := strings.Index(msg, "%")
 		secondValIndex := strings.Index(msg, calcOption)
 		if secondValIndex != -1 && firstValIndex != -1 {
-			firstVal := msg[firstValIndex+2 : secondValIndex]
+			stVal := msg[firstValIndex+2 : secondValIndex]
+			firstVal := strings.ReplaceAll(stVal, " ", "")
 			convFirstVal, _ := strconv.ParseFloat(firstVal, 64)
-			secondVal := msg[secondValIndex+1:]
+			ndVal := msg[secondValIndex+1:]
+			secondVal := strings.ReplaceAll(ndVal, " ", "")
 			convSecondVal, _ := strconv.ParseFloat(secondVal, 64)
 			switch calcOption {
 			case "+":
