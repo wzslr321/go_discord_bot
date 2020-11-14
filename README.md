@@ -9,10 +9,11 @@
 
 > Afterwards, type `go build` to build a bot
 
-> If built properly, you have to run `./bot -t <TOKEN> ` 
+> If built properly, you have to run `./tallky_bot -t <TOKEN> ` 
 
 #
 
 > Example : `./ bot -t NzU5MDEwNXc0ODgwMjEwOTQ4.X23R3g._DE86FVVc9kG7F_XXet7Q00oOQw`
 
-> I have started creating this bot after just few hours of learning GoByExample, so there  is still a lot to improve for sure.
+> I have started creating this bot after just few hours of learning GoByExample.
+> I finished it 24 hours after my first line of code in Golang
