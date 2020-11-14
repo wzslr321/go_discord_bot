@@ -173,11 +173,29 @@ func createEmbed(s *discordgo.Session, m *discordgo.MessageCreate, title string,
 	}
 }
 
-func addValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal string, secondVal string) {
-	convFirstVal,_ := strconv.Atoi(firstVal)
-	convSecondVal,_ := strconv.Atoi(secondVal)
-	calcResult := convFirstVal + convSecondVal
-	convCalcResult := strconv.Itoa(calcResult)
+func calcFuncProto(s *discordgo.Session, m *discordgo.MessageCreate, calcResult float64) {
+	convCalcResult := strconv.FormatFloat(calcResult,'f',4,32)
+	calcIndex := strings.Index(convCalcResult, ".")
+	if calcIndex > -1 {
+		isEvenIndex := convCalcResult[calcIndex+1:calcIndex+5]
+		if isEvenIndex != "0000" {
+			convCalcResult := strconv.FormatFloat(calcResult,'f',8,32)
+			_, err := s.ChannelMessageSend(m.ChannelID,convCalcResult)
+			if err != nil{
+				fmt.Println("error occurred ::",err)
+				return
+			}
+			return
+		} else {
+			convCalcResult := strconv.FormatFloat(calcResult,'f',0,32)
+			_, err := s.ChannelMessageSend(m.ChannelID,convCalcResult)
+			if err != nil{
+				fmt.Println("error occurred ::",err)
+				return
+			}
+			return
+		}
+	}
 	_, err := s.ChannelMessageSend(m.ChannelID,convCalcResult)
 	if err != nil{
 		fmt.Println("error occurred ::",err)
@@ -185,40 +203,25 @@ func addValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal string,
 	}
 }
 
-func subtractValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal string, secondVal string)  {
-	convFirstVal,_ := strconv.Atoi(firstVal)
-	convSecondVal,_ := strconv.Atoi(secondVal)
-	calcResult := convFirstVal - convSecondVal
-	convCalcResult := strconv.Itoa(calcResult)
-	_, err := s.ChannelMessageSend(m.ChannelID,convCalcResult)
-	if err != nil{
-		fmt.Println("error occurred ::",err)
-		return
-	}
+
+func addValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal float64, secondVal float64) {
+	calculationResult := firstVal + secondVal
+	calcFuncProto(s,m,calculationResult)
 }
 
-func multiplyValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal string, secondVal string)  {
-	convFirstVal,_ := strconv.Atoi(firstVal)
-	convSecondVal,_ := strconv.Atoi(secondVal)
-	calcResult := convFirstVal * convSecondVal
-	convCalcResult := strconv.Itoa(calcResult)
-	_, err := s.ChannelMessageSend(m.ChannelID,convCalcResult)
-	if err != nil{
-		fmt.Println("error occurred ::",err)
-		return
-	}
+func subtractValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal float64, secondVal float64)  {
+	calculationResult := firstVal - secondVal
+	calcFuncProto(s,m,calculationResult)
 }
 
-func divideValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal string, secondVal string) {
-	convFirstVal,_ := strconv.ParseFloat(firstVal,64)
-	convSecondVal,_ := strconv.ParseFloat(secondVal,64)
-	calcResult := convFirstVal / convSecondVal
-	convCalcResult := strconv.FormatFloat(calcResult,'f',2,64)
-	_, err := s.ChannelMessageSend(m.ChannelID,convCalcResult)
-	if err != nil{
-		fmt.Println("error occurred ::",err)
-		return
-	}
+func multiplyValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal float64, secondVal float64)  {
+	calculationResult := firstVal * secondVal
+	calcFuncProto(s,m,calculationResult)
+}
+
+func divideValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal float64, secondVal float64) {
+	calculationResult := firstVal / secondVal
+	calcFuncProto(s,m,calculationResult)
 }
 
 func calculate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -239,16 +242,18 @@ func calculate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				secondValIndex := strings.Index(msg,calcOption)
 				if secondValIndex != -1 && firstValIndex != -1 {
 					firstVal := msg[firstValIndex+2:secondValIndex]
+					convFirstVal,_ :=  strconv.ParseFloat(firstVal,64)
 					secondVal := msg[secondValIndex+1:]
+					convSecondVal,_ :=  strconv.ParseFloat(secondVal,64)
 					switch opts {
 					case "+":
-						addValues(s,m,firstVal,secondVal)
+						addValues(s,m,convFirstVal,convSecondVal)
 					case "-":
-						subtractValues(s,m,firstVal,secondVal)
+						subtractValues(s,m,convFirstVal,convSecondVal)
 					case "*":
-						multiplyValues(s,m,firstVal,secondVal)
+						multiplyValues(s,m,convFirstVal,convSecondVal)
 					case ":":
-						divideValues(s,m,firstVal,secondVal)
+						divideValues(s,m,convFirstVal,convSecondVal)
 					}
 
 				}
