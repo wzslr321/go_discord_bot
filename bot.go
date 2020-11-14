@@ -144,7 +144,18 @@ func showTime(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 }
 func openCalculator(s *discordgo.Session, m *discordgo.MessageCreate) {
-	fmt.Println("open calculator")
+	howToUseCalculator := newMessageEmbed(
+		"How to use calculator",
+		"Just enter calculation, starting with % \n \n" +
+			"Possible calculations: '+' , '-' , '*' , ':' \n \n" +
+			"Example: !talk % 2+2 ",
+	)
+
+	_, err := s.ChannelMessageSendEmbed(m.ChannelID,howToUseCalculator)
+	if err != nil{
+		fmt.Println("error occurred ::",err)
+		return
+	}
 }
 
 func createEmbed(s *discordgo.Session, m *discordgo.MessageCreate, title string, description string) {
@@ -162,8 +173,91 @@ func createEmbed(s *discordgo.Session, m *discordgo.MessageCreate, title string,
 	}
 }
 
-func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+func addValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal string, secondVal string) {
+	convFirstVal,_ := strconv.Atoi(firstVal)
+	convSecondVal,_ := strconv.Atoi(secondVal)
+	calcResult := convFirstVal + convSecondVal
+	convCalcResult := strconv.Itoa(calcResult)
+	_, err := s.ChannelMessageSend(m.ChannelID,convCalcResult)
+	if err != nil{
+		fmt.Println("error occurred ::",err)
+		return
+	}
+}
 
+func subtractValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal string, secondVal string)  {
+	convFirstVal,_ := strconv.Atoi(firstVal)
+	convSecondVal,_ := strconv.Atoi(secondVal)
+	calcResult := convFirstVal - convSecondVal
+	convCalcResult := strconv.Itoa(calcResult)
+	_, err := s.ChannelMessageSend(m.ChannelID,convCalcResult)
+	if err != nil{
+		fmt.Println("error occurred ::",err)
+		return
+	}
+}
+
+func multiplyValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal string, secondVal string)  {
+	convFirstVal,_ := strconv.Atoi(firstVal)
+	convSecondVal,_ := strconv.Atoi(secondVal)
+	calcResult := convFirstVal * convSecondVal
+	convCalcResult := strconv.Itoa(calcResult)
+	_, err := s.ChannelMessageSend(m.ChannelID,convCalcResult)
+	if err != nil{
+		fmt.Println("error occurred ::",err)
+		return
+	}
+}
+
+func divideValues(s *discordgo.Session, m *discordgo.MessageCreate,firstVal string, secondVal string) {
+	convFirstVal,_ := strconv.ParseFloat(firstVal,64)
+	convSecondVal,_ := strconv.ParseFloat(secondVal,64)
+	calcResult := convFirstVal / convSecondVal
+	convCalcResult := strconv.FormatFloat(calcResult,'f',2,64)
+	_, err := s.ChannelMessageSend(m.ChannelID,convCalcResult)
+	if err != nil{
+		fmt.Println("error occurred ::",err)
+		return
+	}
+}
+
+func calculate(s *discordgo.Session, m *discordgo.MessageCreate) {
+	calcOptions := []string{"+","-","*",":"}
+	calculateOptions := make(map[string]string)
+
+	calculateOptions["+"] = "+"
+	calculateOptions["-"] = "-"
+	calculateOptions["*"] = "*"
+	calculateOptions[":"] = ":"
+
+	msg := m.Content
+
+	for _,calcOption:= range calcOptions {
+		for _,opts := range calculateOptions {
+			if opts == calcOption {
+				firstValIndex := strings.Index(msg,"%")
+				secondValIndex := strings.Index(msg,calcOption)
+				if secondValIndex != -1 && firstValIndex != -1 {
+					firstVal := msg[firstValIndex+2:secondValIndex]
+					secondVal := msg[secondValIndex+1:]
+					switch opts {
+					case "+":
+						addValues(s,m,firstVal,secondVal)
+					case "-":
+						subtractValues(s,m,firstVal,secondVal)
+					case "*":
+						multiplyValues(s,m,firstVal,secondVal)
+					case ":":
+						divideValues(s,m,firstVal,secondVal)
+					}
+
+				}
+			}
+		}
+	}
+}
+
+func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if m.Author.ID == s.State.User.ID {
 		return
@@ -189,7 +283,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		if len(m.Content) >= 8 {
 			msg := m.Content
-			if strings.HasPrefix(m.Content,"!talk @"){
+			if strings.HasPrefix(msg,"!talk @"){
 				indexDesc := strings.Index(msg,"|")
 				indexTitle := strings.Index(msg,"@")
 				if indexDesc > -1 && indexTitle > -1{
@@ -202,12 +296,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				}
 			}
 
-			_, err := s.ChannelMessageSend(m.ChannelID,"different command with prefix")
-			if err != nil{
-				fmt.Println("error occurred ::",err)
-				return
+			if strings.HasPrefix(msg ,"!talk %"){
+				calculate(s,m)
 			}
 		}
 	}
-
 }
